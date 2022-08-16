@@ -13,7 +13,7 @@ def zoom(img, zoom_factor=2):
 
 # Scaling of image 300 DPI
 def imageResize(img):
-    img = cv2.resize(img, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)  # Inter Cubic
+    img = cv2.resize(img, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)  # Inter Cubic
     return img
 
 
@@ -61,31 +61,40 @@ def extractinformation(img):
 
 
 pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract'
-image_to_ocr = cv2.imread('us1.jpg')
+image_to_ocr = cv2.imread('img_75.jpg')
 processed_img = image_to_ocr
 processed_img = imageResize(processed_img)
 # processed_img = correct_skew(processed_img)
 processed_img = bgrtogrey(processed_img)
-# processed_img = threshold(processed_img)
+#processed_img = threshold(processed_img)
 processed_img = noise_removal(processed_img)
 processed_img = cv2.threshold(processed_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
 ## Example 1
 cv2.imwrite("temp_img.png", processed_img)
-processed_img = Image.open("temp_img.png")
+#processed_img = Image.open("temp_img.png")
+processed_img = cv2.imread("temp_img.png")
 
 print("Processed Image")
 custom_conf1 = ''
 text_extract = pytesseract.image_to_data(processed_img, output_type=Output.DICT, config=custom_conf1)
 # print("1 : " + text_extract['text'])
-# print(text_extract)
+print(text_extract)
 for count, item in enumerate(text_extract['conf']):
     if float(item) > 50:
+        '''(x, y, w, h) = (text_extract['left'][count], text_extract['top'][count], text_extract['width'][count],
+                        text_extract['height'][count])
+        img = cv2.rectangle(processed_img, (x, y), (x + w, y + h), (0, 255, 0), 2)'''
         print("Text: " + text_extract['text'][count], "\n Conf: " + str(item), " left: " + str(text_extract['left'][count]), " top: " + str(text_extract['top'][count]), " width: " + str(text_extract['width'][count]))
+#cv2.imshow('img', img)
+#cv2.waitKey(0)
 print('\n')
 
 print("Processed Image with custom config")
-custom_conf1 = r'--psm 11'
+custom_conf1 = r'--psm 11 --oem 2'
+#custom_conf1 = r'--psm 0 --dpi 200'
+#processed_img.show()
+
 text_extract = pytesseract.image_to_data(processed_img, output_type=Output.DICT, config=custom_conf1)
 # print(text_extract)
 
@@ -115,4 +124,5 @@ for count, item in enumerate(text_extract['conf']):
 # print("4: " + text_extract['text'])
 # custom_conf1 = r'--psm 11'
 # custom_conf1='--psm 6 --oem 3 -c tessedit_char_whitelist=0123456789'
+
 print('\n')
